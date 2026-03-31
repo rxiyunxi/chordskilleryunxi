@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>和弦进化图谱 — Chords & Scales for Guitar</title>
+<style>
+:root{
+  --bg:#0c0c0c;--s1:#161616;--s2:#1e1e1e;--s3:#272727;--s4:#303030;
+  --bd:#2d2d2d;--bd2:#3a3a3a;
+  --ac:#f0a030;--ac2:#d88a18;--ac3:rgba(240,160,48,.12);
+  --tx:#e4e4e4;--tx2:#888;--tx3:#555;
+  --major:#e8952a;--minor:#3a8fd4;--dom7:#9055d4;--maj7:#3da85a;--m7:#4a90d4;
+  --aug:#e05050;--dim:#c040c0;--sus:#20b2aa;--power:#888;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;-webkit-tap-highlight-color:transparent}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;height:52px;background:rgba(12,12,12,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);z-index:200;display:flex;align-items:center}
+.nw{display:flex;align-items:center;width:100%;max-width:1100px;margin:0 auto;padding:0 14px;gap:2px;overflow-x:auto}
+.nw::-webkit-scrollbar{display:none}
+.logo{font-size:16px;font-weight:800;color:var(--ac);margin-right:14px;white-space:nowrap;flex-shrink:0;letter-spacing:-.3px}
+.nb{background:none;border:none;color:var(--tx2);padding:7px 11px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.nb:hover{color:var(--tx);background:var(--s2)}.nb.on{color:var(--ac);background:var(--ac3)}
+
+/* Pages */
+main{margin-top:90px}
+.pg{display:none;max-width:1100px;margin:0 auto;padding:24px 14px 80px}
+.pg.on{display:block}
+
+/* Page headers */
+.ph{margin-bottom:24px}
+.ph h1{font-size:24px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px}
+.ph p{font-size:14px;color:var(--tx2);line-height:1.7}
+
+/* Card */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:13px;padding:18px;margin-bottom:12px}
+.clabel{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.9px;text-transform:uppercase;margin-bottom:12px}
+
+/* ─── Evolution Tree ─────────────────────────────────────── */
+.evo-family{margin-bottom:32px}
+.evo-family-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer}
+.evo-family-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.evo-family-name{font-size:15px;font-weight:800}
+.evo-family-desc{font-size:12px;color:var(--tx2)}
+
+.evo-chain{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding-bottom:8px}
+.evo-chain::-webkit-scrollbar{height:4px}.evo-chain::-webkit-scrollbar-track{background:var(--s2)}.evo-chain::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.evo-node{
+  display:flex;flex-direction:column;align-items:center;position:relative;flex-shrink:0;
+}
+.evo-arrow{
+  display:flex;align-items:center;padding:0 4px;color:var(--tx3);font-size:14px;margin-top:28px;flex-shrink:0;
+}
+.evo-fork{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+
+.chord-node{
+  width:88px;padding:10px 6px 8px;border-radius:11px;border:1.5px solid var(--bd);
+  background:var(--s2);cursor:pointer;text-align:center;transition:all .15s;position:relative;
+}
+.chord-node:hover{border-color:var(--ac);background:var(--s3)}
+.chord-node.active{border-color:var(--ac);background:var(--ac3);box-shadow:0 0 0 3px rgba(240,160,48,.15)}
+.chord-node.playing-anim{animation:pulse .4s ease}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+.cn-sym{font-size:14px;font-weight:800;margin-bottom:2px}
+.cn-form{font-size:9px;color:var(--tx2);font-family:monospace;margin-bottom:4px}
+.cn-feel{font-size:9px;color:var(--tx3)}
+.cn-play{
+  width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;
+  font-size:11px;display:flex;align-items:center;justify-content:center;
+  margin:6px auto 0;transition:all .15s;
+}
+.cn-play:hover{opacity:.8}
+
+/* ─── Chord Detail Panel ─────────────────────────────────── */
+#detail-panel{
+  position:fixed;right:0;top:52px;bottom:0;width:360px;
+  background:var(--s1);border-left:1px solid var(--bd2);
+  overflow-y:auto;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+  z-index:150;
+}
+#detail-panel.open{transform:translateX(0)}
+.dp-close{position:absolute;top:14px;right:14px;background:var(--s3);border:none;color:var(--tx2);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.dp-close:hover{color:var(--tx)}
+.dp-content{padding:20px 18px 40px}
+
+/* Note pills */
+.note-pill{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;font-size:12px;font-weight:800;border:1.5px solid;margin:2px}
+.np-root{background:var(--ac);color:#000;border-color:var(--ac)}
+.np-third{border-color:var(--gr,#3da85a)}
+.np-fifth{border-color:var(--pu,#9055d4);color:var(--pu,#9055d4)}
+.np-ext{border-color:var(--bd2);color:var(--tx2)}
+
+/* Diagram */
+.diagram-row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.diag-wrap{text-align:center;cursor:pointer;padding:6px;border-radius:9px;border:1.5px solid var(--bd);transition:all .15s}
+.diag-wrap:hover{border-color:var(--ac)}
+.diag-wrap.playing{border-color:var(--ac);background:var(--ac3)}
+.diag-label{font-size:10px;color:var(--tx2);margin-top:4px}
+
+/* Evo badge */
+.evo-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:10px}
+
+/* Family section */
+.family-sect{padding:14px;border-radius:11px;border:1px solid var(--bd);margin-bottom:10px;cursor:pointer;transition:all .15s}
+.family-sect:hover{border-color:var(--ac)}
+
+/* Interval visual */
+.iv-bar{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--ac),var(--ac2));margin:2px 0;transition:width .3s}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--s2);padding:8px 10px;text-align:left;border-bottom:1px solid var(--bd);color:var(--tx2);font-weight:600;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.01)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+.bp{background:var(--ac);color:#000}.bp:hover{background:var(--ac2)}
+.bg{background:var(--s3);color:var(--tx);border:1px solid var(--bd)}.bg:hover{border-color:var(--ac);color:var(--ac)}
+
+/* Filters */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.flt{padding:6px 12px;border-radius:7px;border:1.5px solid var(--bd);background:var(--s2);color:var(--tx2);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
+.flt:hover{border-color:var(--ac)}.flt.on{color:var(--ac);border-color:var(--ac);background:var(--ac3)}
+
+/* Insight */
+.ins{background:rgba(240,160,48,.06);border:1px solid rgba(240,160,48,.18);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;margin:10px 0}
+.ins b,.ins strong{color:var(--ac)}
+
+/* Connection line visual */
+.chain-line{width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--bd),transparent);margin:8px 0}
+
+/* Comparison */
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.cmp-cell{padding:12px;background:var(--s2);border-radius:9px;border:1px solid var(--bd);cursor:pointer;transition:all .15s;text-align:center}
+.cmp-cell:hover{border-color:var(--ac)}
+
+select{background:var(--s2);color:var(--tx);border:1px solid var(--bd);padding:7px 11px;border-radius:8px;font-size:13px;cursor:pointer;outline:none}
+select:focus{border-color:var(--ac)}
+
+/* ── 全局触控优化：消除 300ms 点击延迟 ──────────────────── */
+button,select,.chord-node,.dia-cell,.cg-card,.family-sect,.sk-item,
+.pcard,.diag-wrap,.cmp-cell,.scale-dot,.nb,.flt,.key-btn,.gk{touch-action:manipulation}
+
+@media(max-width:700px){
+  /* 详情面板 → 底部抽屉 */
+  #detail-panel{width:100%;top:auto;bottom:0;height:72vh;transform:translateY(100%);border-left:none;border-top:1px solid var(--bd2)}
+  #detail-panel.open{transform:translateY(0);padding-bottom:env(safe-area-inset-bottom,0px)}
+  /* 拖动把手 */
+  #detail-panel::before{content:'';display:block;width:36px;height:4px;background:var(--bd2);border-radius:2px;margin:12px auto 4px}
+
+  /* iOS 动量滚动 */
+  .evo-chain,.gkbar-inner,.scale-row,.nw{-webkit-overflow-scrolling:touch}
+
+  /* 和弦节点 */
+  .evo-chain{gap:0}
+  .chord-node{width:76px}
+  .cn-play{width:34px;height:34px;font-size:12px}  /* 触控目标 ≥34px */
+  .cn-form{font-size:10px}
+  .cn-feel{font-size:10px}
+
+  /* 导航按钮 */
+  .nb{padding:10px 10px}
+
+  /* 全局调性栏按键 */
+  .gk{height:28px;padding:0 8px;font-size:11px}
+
+  /* 详情面板关闭按钮 */
+  .dp-close{width:36px;height:36px;font-size:16px}
+
+  /* 通用按钮最小高度 */
+  .btn{min-height:40px}
+  .flt{padding:8px 12px;min-height:36px}
+
+  /* 学习路径技能项 */
+  .sk-item{padding:11px 0;min-height:44px}
+
+  /* 和弦库卡片：更紧凑网格 */
+  .cg-grid{grid-template-columns:repeat(auto-fill,minmax(85px,1fr))}
+
+  /* 标题字号 */
+  .ph h1{font-size:21px}
+
+  /* 页面底部留白兼容 iPhone 底部手势区 */
+  .pg{padding-bottom:max(80px,calc(60px + env(safe-area-inset-bottom,0px)))}
+
+  /* 练习页评分行自动换行 */
+  .score-row{flex-wrap:wrap;gap:14px}
+  .quiz-opts{max-width:100%}
+}
+
+/* ═══ NEW MODULES ═══════════════════════════════════════════ */
+.prog-wrap{background:var(--s3);border-radius:99px;height:5px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ac),#f06292);transition:width .4s}
+.key-btn{width:44px;height:36px;border-radius:8px;border:1.5px solid var(--bd2);background:var(--s2);color:var(--tx);cursor:pointer;font-size:11px;font-weight:700;transition:all .15s}
+.key-btn:hover{border-color:var(--ac)}.key-btn.on{background:var(--ac);border-color:var(--ac);color:#000}
+.mode-tog{display:flex;border:1.5px solid var(--bd2);border-radius:8px;overflow:hidden;flex-shrink:0;height:fit-content}
+.mode-btn{padding:7px 14px;border:none;background:transparent;color:var(--tx2);cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+.mode-btn.on{background:var(--ac);color:#000}
+.dia-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:14px}
+@media(max-width:700px){.dia-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:400px){.dia-grid{grid-template-columns:repeat(3,1fr)}}
+.dia-cell{background:var(--s2);border:1.5px solid var(--bd2);border-radius:10px;padding:8px 4px 7px;text-align:center;cursor:pointer;transition:all .15s}
+.dia-cell:hover{border-color:var(--ac)}
+.dia-roman{font-size:11px;font-weight:800;margin-bottom:2px}
+.dia-nm{font-size:11px;font-weight:700;margin-top:3px}
+.dia-fn{font-size:9px;color:var(--tx2);margin-top:1px}
+.pcard{background:var(--s2);border:1.5px solid var(--bd2);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s}
+.pcard:hover{border-color:var(--ac)}
+.pcard .pn{font-weight:800;font-size:14px;margin-bottom:3px}
+.pcard .pr{font-size:11px;color:var(--tx2);margin-bottom:8px}
+.ppills{display:flex;gap:5px;flex-wrap:wrap}
+.ppill{background:var(--s1);border:1px solid var(--bd2);border-radius:5px;padding:3px 9px;font-size:12px;font-weight:700;color:var(--ac)}
+.pstyle{font-size:10px;color:var(--tx3);margin-top:6px}
+.pdesc{font-size:11px;color:var(--tx2);margin-top:4px}
+.stage-wrap{background:var(--s1);border:1.5px solid var(--bd);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.stage-hdr{padding:13px 15px;display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
+.stage-num{width:32px;height:32px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;color:#000}
+.stage-meta{flex:1}
+.stage-title{font-weight:800;font-size:13px}
+.stage-desc{font-size:11px;color:var(--tx2);margin-top:1px}
+.stage-ct{font-size:12px;font-weight:700;color:#48bb78;flex-shrink:0}
+.stage-body{display:none;padding:0 15px 13px}
+.stage-body.open{display:block}
+.sk-list{list-style:none}
+.sk-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.sk-item:last-child{border-bottom:none}
+.sk-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s;color:transparent}
+.sk-dot.done{background:#48bb78;border-color:#48bb78;color:#fff}
+.sk-tx{font-size:13px;flex:1}
+.sk-item.done .sk-tx{color:var(--tx2);text-decoration:line-through}
+.cg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+.cg-card{background:var(--s2);border:1.5px solid var(--bd2);border-radius:10px;padding:10px 6px 7px;text-align:center;cursor:pointer;transition:all .15s}
+.cg-card:hover{border-color:var(--ac);transform:translateY(-2px)}
+.cg-name{font-size:12px;font-weight:800;margin-top:4px}
+.cg-type{font-size:10px;color:var(--tx2)}
+.quiz-area{display:flex;flex-direction:column;align-items:center;gap:16px}
+.quiz-diag{background:var(--s2);border:1.5px solid var(--bd2);border-radius:14px;padding:22px;display:inline-block}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:360px}
+.quiz-opt{padding:12px;border-radius:9px;border:1.5px solid var(--bd2);background:var(--s2);color:var(--tx);cursor:pointer;font-size:13px;font-weight:700;transition:all .15s;text-align:center}
+.quiz-opt:hover:not(:disabled){border-color:var(--ac)}
+.quiz-opt.correct{background:#3da85a;border-color:#3da85a;color:#fff}
+.quiz-opt.wrong{background:#c0392b;border-color:#c0392b;color:#fff}
+.quiz-fb{font-size:14px;font-weight:700;min-height:20px;text-align:center}
+.quiz-fb.ok{color:#3da85a}.quiz-fb.no{color:#fc8181}
+.score-row{display:flex;gap:22px}
+.score-item{text-align:center}
+.score-n{font-size:24px;font-weight:800}
+.score-l{font-size:11px;color:var(--tx2)}
+
+/* ── Global Key Bar ─────────────────────────────────────── */
+.gkbar{position:fixed;top:52px;left:0;right:0;height:38px;background:rgba(10,10,10,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);z-index:190;display:flex;align-items:center}
+.gkbar-inner{width:100%;max-width:1100px;margin:0 auto;padding:0 14px;display:flex;align-items:center;gap:3px;overflow-x:auto}
+.gkbar-inner::-webkit-scrollbar{display:none}
+.gkbar-label{font-size:9px;font-weight:700;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-right:3px}
+.gk{height:22px;padding:0 6px;border-radius:5px;border:1.5px solid var(--bd2);background:var(--s2);color:var(--tx2);cursor:pointer;font-size:10px;font-weight:700;transition:all .12s;flex-shrink:0}
+.gk:hover{border-color:var(--ac)}.gk.on{background:var(--ac);border-color:var(--ac);color:#000}
+.gmode-tog{display:flex;border:1.5px solid var(--bd2);border-radius:5px;overflow:hidden;flex-shrink:0;margin-left:6px}
+.gmode-btn{padding:2px 8px;border:none;background:transparent;color:var(--tx2);cursor:pointer;font-size:10px;font-weight:700;transition:all .12s;white-space:nowrap}
+.gmode-btn.on{background:var(--ac);color:#000}
+
+/* ── Scale Page ─────────────────────────────────────────── */
+.scale-row{display:flex;align-items:flex-start;overflow-x:auto;padding:14px 2px 8px;gap:0}
+.scale-row::-webkit-scrollbar{height:3px}.scale-row::-webkit-scrollbar-track{background:var(--s2)}.scale-row::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.scale-node{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:58px}
+.scale-dot{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2.5px solid;cursor:pointer;transition:transform .15s}
+.scale-dot:hover{transform:scale(1.1)}
+.scale-deg{font-size:10px;font-weight:800;margin-top:4px}
+.scale-chd{font-size:9px;color:var(--tx2);margin-top:2px}
+.scale-step-wrap{width:18px;display:flex;align-items:flex-start;justify-content:center;flex-shrink:0;padding-top:12px}
+.scale-step-lbl{font-size:8px;font-weight:700;color:var(--tx3);background:var(--s3);border-radius:3px;padding:1px 2px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nw">
+    <span class="logo">🎸 吉他学习</span>
+    <button class="nb on" onclick="go('scale')">🎵 音阶</button>
+    <button class="nb" onclick="go('key')">🎯 顺阶和弦</button>
+    <button class="nb" onclick="go('prog')">🎼 和弦进行</button>
+    <button class="nb" onclick="go('tree')">进化图谱</button>
+    <button class="nb" onclick="go('families')">家族详解</button>
+    <button class="nb" onclick="go('dict')">和弦字典</button>
+    <button class="nb" onclick="go('rules')">规律总结</button>
+    <button class="nb" onclick="go('chords')">和弦库</button>
+    <button class="nb" onclick="go('quiz')">练习</button>
+    <button class="nb" onclick="go('path')">📚 学习路径</button>
+  </div>
+</nav>
+
+<!-- Global Key Bar -->
+<div class="gkbar">
+  <div class="gkbar-inner">
+    <span class="gkbar-label">调性</span>
+    <div id="gkey-btns" style="display:flex;gap:3px"></div>
+    <div class="gmode-tog">
+      <button class="gmode-btn on" id="gmode-maj" onclick="setGlobalMode('major')">大调</button>
+      <button class="gmode-btn" id="gmode-min" onclick="setGlobalMode('minor')">小调</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ⓪ 音阶 -->
+<div id="p-scale" class="pg on">
+  <div class="ph">
+    <h1>音阶 Scale</h1>
+    <p>大调音阶是一切和弦的起点。7个音按固定间距排列，顺阶和弦就是从中推导出来的。先把一个调学透，其他调只是平移。</p>
+  </div>
+  <div id="scale-content"></div>
+</div>
+
+<!-- ① 进化图谱 -->
+<div id="p-tree" class="pg">
+  <div class="ph">
+    <h1>和弦进化图谱</h1>
+    <p>书中全部和弦类型按演化关系排列。每种和弦都是从上一种加音或改音发展而来。点击任意和弦查看详情，点击 ▶ 听声音。</p>
+  </div>
+  <div class="ins">
+    <b>阅读方式：</b>从左到右，每一步代表"加入一个音"或"改变一个音"。左边是简单，右边是复杂。颜色代表和弦的情感特质。
+  </div>
+  <div id="tree-container"></div>
+</div>
+
+<!-- ② 家族详解 -->
+<div id="p-families" class="pg">
+  <div class="ph">
+    <h1>和弦家族详解</h1>
+    <p>每个家族内部的和弦高度相关，只差1-2个音。学会一个家族，其他的触类旁通。</p>
+  </div>
+  <div class="filter-row" id="fam-filters"></div>
+  <div id="fam-content"></div>
+</div>
+
+<!-- ③ 和弦字典 -->
+<div id="p-dict" class="pg">
+  <div class="ph">
+    <h1>和弦字典</h1>
+    <p>选择根音和类型，查看完整信息：构成音、吉他指法、情感特质、使用场景。</p>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+    <select id="dict-root" onchange="renderDictChord()">
+      <option>C</option><option>C#</option><option>D</option><option>D#</option>
+      <option>E</option><option>F</option><option>F#</option><option>G</option>
+      <option>G#</option><option>A</option><option>A#</option><option>B</option>
+    </select>
+    <select id="dict-type" onchange="renderDictChord()">
+      <option value="major">大三和弦 Major</option>
+      <option value="minor">小三和弦 Minor</option>
+      <option value="aug">增和弦 Augmented (+)</option>
+      <option value="dim">减和弦 Diminished (°)</option>
+      <option value="sus2">挂留二 sus2</option>
+      <option value="sus4">挂留四 sus4</option>
+      <option value="5">强力和弦 Power (5)</option>
+      <option value="add9">加九 add9</option>
+      <option value="madd9">小加九 m(add9)</option>
+      <option value="6">六和弦 6th</option>
+      <option value="m6">小六 m6</option>
+      <option value="69">六加九 6/9</option>
+      <option value="7">属七 Dominant 7</option>
+      <option value="dim7">减七 Diminished 7 (°7)</option>
+      <option value="7sus4">属七挂四 7sus4</option>
+      <option value="maj7">大七 Major 7</option>
+      <option value="m7">小七 Minor 7</option>
+      <option value="mmaj7">小大七 m(maj7)</option>
+      <option value="maj7b5">大七减五 maj7(b5)</option>
+      <option value="m7b5">小七减五 m7(b5) ø</option>
+      <option value="aug7">增七 +7</option>
+      <option value="7b5">七减五 7(b5)</option>
+      <option value="7b9">七降九 7(b9)</option>
+      <option value="7s9">七升九 7(#9)</option>
+      <option value="aug7b9">增七降九 +7(b9)</option>
+      <option value="9">九和弦 9th</option>
+      <option value="maj9">大九 maj9</option>
+      <option value="m9">小九 m9</option>
+      <option value="11">十一 11th</option>
+      <option value="m11">小十一 m11</option>
+      <option value="13">十三 13th</option>
+    </select>
+    <button class="btn bp" onclick="renderDictChord()">查看</button>
+  </div>
+  <div id="dict-result"></div>
+</div>
+
+<!-- ④ 规律总结 -->
+<div id="p-rules" class="pg">
+  <div class="ph">
+    <h1>和弦的底层规律</h1>
+    <p>掌握这些规律，你就能自己推导出书中任意一个和弦。</p>
+  </div>
+  <div id="rules-content"></div>
+</div>
+
+</main>
+
+<!-- ⑤ 学习路径 -->
+<div id="p-path" class="pg">
+  <div class="ph"><h1>学习路径</h1><p>从零到能为歌曲配和弦，分四阶段系统推进。点击技能项标记完成，进度自动保存。</p></div>
+  <div class="card" style="margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <span style="font-weight:700">总体进度</span>
+      <span id="path-pct" style="font-weight:800;color:#48bb78">0%</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" id="path-fill" style="width:0%"></div></div>
+  </div>
+  <div id="stages-con"></div>
+</div>
+
+<!-- ⑥ 和弦库 -->
+<div id="p-chords" class="pg">
+  <div class="ph"><h1>和弦库</h1><p>按根音或类型筛选所有常用和弦，点击卡片可试听并在右侧面板查看详情。</p></div>
+  <div class="clabel">按根音</div>
+  <div class="filter-row" id="lib-root-row"></div>
+  <div class="clabel" style="margin-top:4px">按类型</div>
+  <div class="filter-row" id="lib-type-row"></div>
+  <div class="cg-grid" id="chord-grid-new"></div>
+</div>
+
+<!-- ⑦ 调性匹配 -->
+<div id="p-key" class="pg">
+  <div class="ph"><h1>调性匹配器</h1><p>选择调性，立即显示该调中全部 7 个自然和弦——这些和弦可以自由组合，绝对不会"出调"。</p></div>
+  <div class="card">
+    <div class="clabel">选择调性</div>
+    <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+      <div id="kf-btns" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+      <div class="mode-tog">
+        <button class="mode-btn on" id="kfm-maj" onclick="setKFMode('major')">大调</button>
+        <button class="mode-btn" id="kfm-min" onclick="setKFMode('minor')">小调</button>
+      </div>
+    </div>
+  </div>
+  <div id="kf-result"></div>
+</div>
+
+<!-- ⑧ 常用进行 -->
+<div id="p-prog" class="pg">
+  <div class="ph"><h1>常用和弦进行</h1><p>选择调性，看懂每个进行在这个调里具体用哪些和弦弹。</p></div>
+  <div class="card">
+    <div class="clabel">选择调性</div>
+    <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+      <div id="pg-btns" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+      <div class="mode-tog">
+        <button class="mode-btn on" id="pgm-maj" onclick="setPGMode('major')">大调</button>
+        <button class="mode-btn" id="pgm-min" onclick="setPGMode('minor')">小调</button>
+      </div>
+    </div>
+  </div>
+  <div id="pg-result" style="margin-top:0"></div>
+</div>
+
+<!-- ⑨ 练习测验 -->
+<div id="p-quiz" class="pg">
+  <div class="ph"><h1>和弦识别练习</h1><p>看指板图谱猜和弦，建立视觉记忆。点击卡片可同时试听该和弦。</p></div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="score-row">
+      <div class="score-item"><div class="score-n" id="sqz-ok" style="color:#3da85a">0</div><div class="score-l">答对</div></div>
+      <div class="score-item"><div class="score-n" id="sqz-no" style="color:#fc8181">0</div><div class="score-l">答错</div></div>
+      <div class="score-item"><div class="score-n" id="sqz-tot" style="color:var(--ac)">0</div><div class="score-l">总计</div></div>
+      <div class="score-item" style="margin-left:auto"><div class="score-n" id="sqz-pct" style="color:#f0a030">—</div><div class="score-l">正确率</div></div>
+    </div>
+  </div>
+  <div class="card quiz-area">
+    <div style="font-size:12px;color:var(--tx2)">这是哪个和弦？</div>
+    <div class="quiz-diag" id="qz-diag"></div>
+    <div class="quiz-fb" id="qz-fb"></div>
+    <div class="quiz-opts" id="qz-opts"></div>
+    <button class="btn bp" id="qz-next" onclick="nextQ()" style="display:none">下一题 →</button>
+  </div>
+</div>
+
+<!-- Detail Side Panel -->
+<div id="detail-panel">
+  <button class="dp-close" onclick="closePanel()">×</button>
+  <div class="dp-content" id="dp-inner"></div>
+</div>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:140" onclick="closePanel()"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// GLOBAL KEY STATE
+// ═══════════════════════════════════════════════════════════
+let globalKey = 'C';
+let globalMode = 'major';
+
+function setGlobalKey(k) {
+  globalKey = k;
+  kfKey = k; pgKey = k;
+  document.querySelectorAll('.gk').forEach(b => b.classList.toggle('on', b.dataset.key === k));
+  // sync key finder + progressions buttons
+  const ki = NS.indexOf(k);
+  document.querySelectorAll('#kf-btns .key-btn').forEach((b,i) => b.classList.toggle('on', i===ki));
+  document.querySelectorAll('#pg-btns .key-btn').forEach((b,i) => b.classList.toggle('on', i===ki));
+  rerenderCurrent();
+}
+function setGlobalMode(m) {
+  globalMode = m;
+  kfMode = m; pgMode = m;
+  ['gmode-maj','kfm-maj','pgm-maj'].forEach(id => document.getElementById(id)?.classList.toggle('on', m==='major'));
+  ['gmode-min','kfm-min','pgm-min'].forEach(id => document.getElementById(id)?.classList.toggle('on', m==='minor'));
+  rerenderCurrent();
+}
+function rerenderCurrent() {
+  const cur = document.querySelector('.pg.on')?.id?.replace('p-','');
+  if (cur === 'scale') renderScale();
+  else if (cur === 'tree') renderTree();
+  else if (cur === 'families') renderFamilies();
+  else if (cur === 'rules') renderRules();
+  else if (cur === 'key') renderKeyFinder();
+  else if (cur === 'prog') renderProgs();
+}
+function initGlobalKeyBar() {
+  document.getElementById('gkey-btns').innerHTML =
+    NS.map((n,i) => `<button class="gk${n==='C'?' on':''}" data-key="${n}" onclick="setGlobalKey('${n}')">${NDIS[i]}</button>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// AUDIO ENGINE — with stop-previous support
+// ═══════════════════════════════════════════════════════════
+let _AC = null;
+const AC = () => _AC || (_AC = new (window.AudioContext || window.webkitAudioContext)());
+
+// Track all active gain nodes so we can ramp them to 0 instantly
+let _activeGains = [];
+
+function stopAll() {
+  const now = AC().currentTime;
+  _activeGains.forEach(g => {
+    try {
+      g.gain.cancelScheduledValues(now);
+      g.gain.setTargetAtTime(0, now, 0.015); // fast fade ~50ms
+    } catch(e) {}
+  });
+  _activeGains = [];
+}
+
+function pluck(freq, t, dur = 2.2, vol = 0.26) {
+  const c = AC();
+  [[1,.44],[2,.29],[3,.14],[4,.08],[6,.03]].forEach(([h, v]) => {
+    const osc = c.createOscillator();
+    const g   = c.createGain();
+    const flt = c.createBiquadFilter();
+    flt.type = 'lowpass'; flt.frequency.value = freq * 3.2; flt.Q.value = 0.7;
+    osc.type = h <= 2 ? 'triangle' : 'sine';
+    osc.frequency.value = freq * h;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol * v, t + .012);
+    g.gain.exponentialRampToValueAtTime(.0002, t + dur);
+    osc.connect(flt); flt.connect(g); g.connect(c.destination);
+    osc.start(t); osc.stop(t + dur + .1);
+    _activeGains.push(g);
+  });
+}
+
+const STRS = [82.41, 110, 146.83, 196, 246.94, 329.63];
+const fhz = (s, f) => STRS[s] * Math.pow(2, f / 12);
+
+function playFrets(frets, arp = true) {
+  stopAll();
+  const c = AC(), now = c.currentTime;
+  let d = 0;
+  frets.forEach((f, s) => {
+    if (f >= 0) { pluck(fhz(s, f), now + d, 2.4, .22); if (arp) d += .055; }
+  });
+}
+
+function playIntervals(root_hz, intervals, arp = true) {
+  stopAll();
+  const c = AC(), now = c.currentTime;
+  intervals.forEach((iv, i) => {
+    const freq = root_hz * Math.pow(2, iv / 12);
+    pluck(freq, now + (arp ? i * .08 : 0), 2.4, .24);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// MUSIC DATA
+// ═══════════════════════════════════════════════════════════
+const NS    = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NFREQ = {C:261.63,'C#':277.18,D:293.66,'D#':311.13,E:329.63,F:349.23,'F#':369.99,G:392,'G#':415.3,A:440,'A#':466.16,B:493.88};
+const OS    = [4, 9, 2, 7, 11, 4]; // open string note indices
+
+// All chord type definitions
+const CT = {
+  // ── Triads ──────────────────────────────────────────────
+  '5':     { name:'强力和弦',   sym:'5',       ivs:[0,7],           cat:'power',  col:'#888',   feel:'力量、稳固',      use:'摇滚金属Bass',      why:'只有根音+纯五度，无大小之分',
+             parent:null,       change:'根音 + 纯五度(7品)' },
+  'major': { name:'大三和弦',   sym:'',        ivs:[0,4,7],         cat:'major',  col:'#e8952a',feel:'明亮、积极',      use:'流行、民谣、古典',   why:'在5上加大三度(4品)',
+             parent:'5',        change:'加入 大三度(+4品)' },
+  'minor': { name:'小三和弦',   sym:'m',       ivs:[0,3,7],         cat:'minor',  col:'#3a8fd4',feel:'忧郁、温柔',      use:'流行、摇滚、R&B',    why:'三度音低半品变小三度',
+             parent:'major',    change:'三度音低半品 E→E♭' },
+  'aug':   { name:'增和弦',     sym:'+',       ivs:[0,4,8],         cat:'aug',    col:'#e05050',feel:'悬疑、不安定',    use:'过渡和弦、爵士',     why:'五度音高半品变增五度',
+             parent:'major',    change:'五度音高半品 G→G#' },
+  'dim':   { name:'减和弦',     sym:'°',       ivs:[0,3,6],         cat:'dim',    col:'#c040c0',feel:'极度紧张',        use:'戏剧效果、爵士',     why:'小三度+减五度',
+             parent:'minor',    change:'五度音低半品 G→G♭' },
+  'sus2':  { name:'挂留二',     sym:'sus2',    ivs:[0,2,7],         cat:'sus',    col:'#20b2aa',feel:'开放、空灵',      use:'流行、氛围',          why:'三度音换成大二度(全音)',
+             parent:'major',    change:'三度音换成 二度(+2品)' },
+  'sus4':  { name:'挂留四',     sym:'sus4',    ivs:[0,5,7],         cat:'sus',    col:'#20b2aa',feel:'悬浮、期待',      use:'过渡、摇滚',          why:'三度音换成纯四度',
+             parent:'major',    change:'三度音换成 四度(+5品)' },
+
+  // ── Add chords ───────────────────────────────────────────
+  'add9':  { name:'加九和弦',   sym:'add9',    ivs:[0,4,7,14],      cat:'major',  col:'#e8952a',feel:'开阔、丰满',      use:'现代流行、indie',    why:'大三和弦加入九度(不经过7度)',
+             parent:'major',    change:'加入 九度音(+14品，无7度)' },
+  'madd9': { name:'小加九',     sym:'m(add9)', ivs:[0,3,7,14],      cat:'minor',  col:'#3a8fd4',feel:'忧郁+开阔',      use:'流行、R&B',           why:'小三和弦加入九度',
+             parent:'minor',    change:'加入 九度音(+14品，无7度)' },
+  '6':     { name:'六和弦',     sym:'6',       ivs:[0,4,7,9],       cat:'major',  col:'#e8952a',feel:'甜美、复古',      use:'爵士、流行、乡村',   why:'大三和弦加入大六度',
+             parent:'major',    change:'加入 大六度(+9品)' },
+  'm6':    { name:'小六和弦',   sym:'m6',      ivs:[0,3,7,9],       cat:'minor',  col:'#3a8fd4',feel:'忧郁+甜',        use:'爵士、巴萨诺瓦',     why:'小三和弦加入大六度',
+             parent:'minor',    change:'加入 大六度(+9品)' },
+  '69':    { name:'六九和弦',   sym:'6/9',     ivs:[0,4,7,9,14],    cat:'major',  col:'#e8952a',feel:'丰满、现代',      use:'爵士融合、funk',     why:'六和弦再加九度音',
+             parent:'6',        change:'再加入 九度音' },
+
+  // ── Seventh chords ───────────────────────────────────────
+  '7':     { name:'属七和弦',   sym:'7',       ivs:[0,4,7,10],      cat:'dom7',   col:'#9055d4',feel:'紧张、期待解决',  use:'蓝调、爵士、过渡',   why:'大三和弦加小七度(b7)',
+             parent:'major',    change:'加入 小七度(+10品)' },
+  'maj7':  { name:'大七和弦',   sym:'maj7',    ivs:[0,4,7,11],      cat:'maj7',   col:'#3da85a',feel:'浪漫、现代、梦幻', use:'流行R&B、爵士',     why:'大三和弦加大七度(M7)',
+             parent:'major',    change:'加入 大七度(+11品)' },
+  'm7':    { name:'小七和弦',   sym:'m7',      ivs:[0,3,7,10],      cat:'m7',     col:'#4a90d4',feel:'柔和、爵士感',    use:'爵士、融合、流行',   why:'小三和弦加小七度',
+             parent:'minor',    change:'加入 小七度(+10品)' },
+  'mmaj7': { name:'小大七',     sym:'m(maj7)', ivs:[0,3,7,11],      cat:'m7',     col:'#4a90d4',feel:'神秘、异域',      use:'爵士、电影配乐',     why:'小三和弦加大七度(少见)',
+             parent:'minor',    change:'加入 大七度(+11品，异域感)' },
+  'dim7':  { name:'减七和弦',   sym:'°7',      ivs:[0,3,6,9],       cat:'dim',    col:'#c040c0',feel:'极度紧张、戏剧',  use:'古典、爵士、过渡',   why:'减三和弦加减七度',
+             parent:'dim',      change:'加入 减七度(+9品)' },
+  'm7b5':  { name:'半减七',     sym:'m7(b5)',  ivs:[0,3,6,10],      cat:'dim',    col:'#c040c0',feel:'紧张、不安',      use:'爵士ii°7和弦',      why:'减三和弦加小七度',
+             parent:'dim',      change:'加入 小七度(+10品)' },
+  'maj7b5':{ name:'大七减五',   sym:'maj7(b5)',ivs:[0,4,6,11],      cat:'maj7',   col:'#3da85a',feel:'神秘、前卫',      use:'前卫爵士',           why:'大七和弦减五度',
+             parent:'maj7',     change:'五度音低半品' },
+  '7sus4': { name:'七挂四',     sym:'7sus4',   ivs:[0,5,7,10],      cat:'sus',    col:'#20b2aa',feel:'悬浮+紧张',       use:'摇滚、融合',         why:'属七和弦三度换四度',
+             parent:'7',        change:'三度音换成 四度' },
+  'aug7':  { name:'增七和弦',   sym:'+7',      ivs:[0,4,8,10],      cat:'aug',    col:'#e05050',feel:'极度不安定',      use:'爵士过渡',           why:'增和弦加小七度',
+             parent:'aug',      change:'加入 小七度(+10品)' },
+  '7b5':   { name:'七减五',     sym:'7(b5)',   ivs:[0,4,6,10],      cat:'dom7',   col:'#9055d4',feel:'紧张、蓝调感',    use:'爵士替代属七',       why:'属七和弦五度音降半',
+             parent:'7',        change:'五度音低半品 G→G♭' },
+  '7b9':   { name:'七降九',     sym:'7(b9)',   ivs:[0,4,7,10,13],   cat:'dom7',   col:'#9055d4',feel:'极紧张、西班牙风', use:'爵士、弗拉门戈',    why:'属七加降九度',
+             parent:'7',        change:'加入 降九度(+13品)' },
+  '7s9':   { name:'七升九',     sym:'7(#9)',   ivs:[0,4,7,10,15],   cat:'dom7',   col:'#9055d4',feel:'扭曲、迷幻',       use:'Hendrix和弦、funk', why:'属七加升九度(内含大小三度！)',
+             parent:'7',        change:'加入 升九度(+15品) — Hendrix和弦' },
+  'aug7b9':{ name:'增七降九',   sym:'+7(b9)',  ivs:[0,4,8,10,13],   cat:'aug',    col:'#e05050',feel:'最强不安定感',    use:'爵士过渡极值',       why:'增七和弦加降九度',
+             parent:'aug7',     change:'加入 降九度' },
+
+  // ── Extended ─────────────────────────────────────────────
+  '9':     { name:'九和弦',     sym:'9',       ivs:[0,4,7,10,14],   cat:'dom7',   col:'#9055d4',feel:'丰富、R&B感',     use:'R&B、funk、爵士',    why:'属七和弦加九度(含b7)',
+             parent:'7',        change:'加入 九度音(+14品)' },
+  'maj9':  { name:'大九和弦',   sym:'maj9',    ivs:[0,4,7,11,14],   cat:'maj7',   col:'#3da85a',feel:'梦幻、开阔',      use:'爵士、现代流行',     why:'大七和弦加九度',
+             parent:'maj7',     change:'加入 九度音(+14品)' },
+  'm9':    { name:'小九和弦',   sym:'m9',      ivs:[0,3,7,10,14],   cat:'m7',     col:'#4a90d4',feel:'柔和+丰富',       use:'R&B、爵士、融合',    why:'小七和弦加九度',
+             parent:'m7',       change:'加入 九度音(+14品)' },
+  '11':    { name:'十一和弦',   sym:'11',      ivs:[0,4,7,10,14,17],cat:'dom7',   col:'#9055d4',feel:'开阔、浮动',      use:'爵士、融合',         why:'九和弦加十一度',
+             parent:'9',        change:'加入 十一度(+17品)' },
+  'm11':   { name:'小十一',     sym:'m11',     ivs:[0,3,7,10,14,17],cat:'m7',     col:'#4a90d4',feel:'深沉、爵士',      use:'爵士、融合',         why:'小九和弦加十一度',
+             parent:'m9',       change:'加入 十一度(+17品)' },
+  '13':    { name:'十三和弦',   sym:'13',      ivs:[0,4,7,10,14,21],cat:'dom7',   col:'#9055d4',feel:'最丰富、爵士顶点', use:'爵士、大乐队',      why:'十一和弦再加十三度',
+             parent:'11',       change:'加入 十三度(+21品)' },
+};
+
+// Guitar voicings: E-shape & A-shape templates [relative to barre fret]
+const SHAPES = {
+  'major': {
+    E: [0,2,2,1,0,0],  // barre
+    A: [-1,0,2,2,2,0],
+    open: {C:[-1,3,2,0,1,0],D:[-1,-1,0,2,3,2],E:[0,2,2,1,0,0],G:[3,2,0,0,3,3],A:[-1,0,2,2,2,0]}
+  },
+  'minor': {
+    E: [0,2,2,0,0,0],
+    A: [-1,0,2,2,1,0],
+    open: {Am:[-1,0,2,2,1,0],Em:[0,2,2,0,0,0],Dm:[-1,-1,0,2,3,1]}
+  },
+  '7': {
+    E: [0,2,0,1,0,0],
+    A: [-1,0,2,0,2,0],
+    open: {G7:[3,2,0,0,0,1],E7:[0,2,0,1,0,0],A7:[-1,0,2,0,2,0],D7:[-1,-1,0,2,1,2],C7:[-1,3,2,3,1,0]}
+  },
+  'maj7': {
+    E: [0,2,2,1,0,0], // not exact but approx
+    A: [-1,0,2,1,2,0],
+    open: {Cmaj7:[-1,3,2,0,0,0],Gmaj7:[3,2,0,0,0,2],Amaj7:[-1,0,2,1,2,0],Fmaj7:[-1,-1,3,2,1,0]}
+  },
+  'm7': {
+    E: [0,2,0,0,0,0],
+    A: [-1,0,2,0,1,0],
+    open: {Am7:[-1,0,2,0,1,0],Em7:[0,2,2,0,3,0],Dm7:[-1,-1,0,2,1,1]}
+  },
+};
+
+function getVoicing(root, type) {
+  const ri = NS.indexOf(root);
+  const shape = SHAPES[type];
+
+  // Check open chords first
+  if (shape?.open) {
+    const key = root + (type === 'minor' ? 'm' : type === 'm7' ? 'm7' : type === 'maj7' ? 'maj7' : '');
+    const nKey = root + (['minor','m7'].includes(type) ? (type==='m7'?'m7':'m') : type==='maj7'?'maj7':type==='7'?'7':'');
+    if (shape.open[root]) return shape.open[root];
+    if (shape.open[key]) return shape.open[key];
+    if (shape.open[nKey]) return shape.open[nKey];
+  }
+
+  // E-shape barre
+  if (shape?.E) {
+    const barre = (ri - 4 + 12) % 12 || 12;
+    return shape.E.map(f => f < 0 ? -1 : f + barre);
+  }
+
+  // Generic: build from intervals on string 6
+  const barre = (ri - 4 + 12) % 12 || 12;
+  const ivs = CT[type]?.ivs || [0,4,7];
+  // Simple E-shape: assign intervals to strings
+  const result = [-1,-1,-1,-1,-1,-1];
+  const strNotes = [0,1,2,3,4,5].map(s => (OS[s] + barre) % 12); // open strings at barre
+  // Try to place each interval
+  ivs.slice(0,4).forEach(iv => {
+    const target = (ri + iv) % 12;
+    for (let s = 5; s >= 0; s--) {
+      if (result[s] >= 0) continue;
+      for (let f = barre; f <= barre + 4; f++) {
+        if ((OS[s] + f) % 12 === target) { result[s] = f; break; }
+      }
+    }
+  });
+  return result.map(f => f < 0 ? -1 : f);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHORD DIAGRAM SVG
+// ═══════════════════════════════════════════════════════════
+function diagSVG(frets, sz = 82) {
+  if (!frets || frets.every(f => f < 0)) return '<svg width="' + sz + '" height="' + Math.round(sz*1.3) + '"></svg>';
+  const W = sz, H = Math.round(sz * 1.3);
+  const ml = 11, mr = 7, mt = 18, mb = 4;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  const ss = iw / 5, fs = ih / 5;
+  const vf = frets.filter(f => f > 0);
+  let bf = 1;
+  if (vf.length && Math.max(...vf) > 5) bf = Math.min(...vf);
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  // Nut or position
+  if (bf === 1) s += `<rect x="${ml}" y="${mt}" width="${iw}" height="3" fill="#aaa" rx="1.5"/>`;
+  else s += `<text x="${ml-2}" y="${mt+fs*.6}" font-size="7.5" fill="#666" text-anchor="end">${bf}fr</text>`;
+  // Frets
+  for (let i = 1; i <= 5; i++) s += `<line x1="${ml}" y1="${mt+3+i*fs}" x2="${ml+iw}" y2="${mt+3+i*fs}" stroke="#252525" stroke-width="1"/>`;
+  // Strings
+  for (let i = 0; i < 6; i++) {
+    const x = ml + i * ss;
+    s += `<line x1="${x}" y1="${mt+3}" x2="${x}" y2="${mt+3+5*fs}" stroke="#404040" stroke-width="${.7+(5-i)*.18}"/>`;
+    if (frets[i] === -1) s += `<text x="${x}" y="${mt-3}" font-size="9" fill="#b03030" text-anchor="middle">×</text>`;
+    else if (frets[i] === 0) s += `<circle cx="${x}" cy="${mt-8}" r="4" fill="none" stroke="#555" stroke-width="1.4"/>`;
+  }
+  // Barre
+  const posed = frets.map((f,i)=>({f,i})).filter(x=>x.f>0);
+  if (posed.length >= 4) {
+    const mn = Math.min(...posed.map(x=>x.f));
+    const atMn = posed.filter(x=>x.f===mn);
+    if (atMn.length >= 4) {
+      const x1=ml+atMn[0].i*ss, x2=ml+atMn[atMn.length-1].i*ss;
+      const by = mt+3+(mn-bf+.5)*fs;
+      s += `<rect x="${x1-5}" y="${by-5}" width="${x2-x1+10}" height="10" rx="5" fill="#d88a18"/>`;
+    }
+  }
+  // Dots
+  frets.forEach((f,i) => {
+    if (f > 0) {
+      const x=ml+i*ss, y=mt+3+(f-bf+.5)*fs, r=fs*.29;
+      s += `<circle cx="${x}" cy="${y}" r="${r}" fill="#e8952a"/>`;
+    }
+  });
+  return s + '</svg>';
+}
+
+// Get chord notes for a root + type
+function chordNotes(root, type) {
+  const ri = NS.indexOf(root.replace('b','').replace('#','').startsWith(root[0]) ? root : root[0]);
+  const ri2 = NS.indexOf(root); // exact
+  const base = ri2 >= 0 ? ri2 : NS.findIndex(n => n.startsWith(root[0]));
+  const ivs = CT[type]?.ivs || [];
+  return ivs.map(iv => NS[(base + iv) % 12]);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVOLUTION TREE DATA
+// ═══════════════════════════════════════════════════════════
+// Organized into evolution chains per family
+const CHAINS = [
+  {
+    id: 'power_major',
+    name: 'Major 大和弦家族',
+    color: '#e8952a',
+    desc: '从最简单的强力和弦出发，发展出所有明亮系和弦',
+    chains: [
+      { label: '基础扩展', nodes: ['5','major','add9','6','69'] },
+      { label: '七度延伸', nodes: ['major','maj7','maj9'] },
+      { label: '变化', nodes: ['major','aug','aug7','aug7b9'] },
+      { label: '挂留', nodes: ['major','sus2'] },
+      { label: '挂留', nodes: ['major','sus4','7sus4'] },
+    ]
+  },
+  {
+    id: 'minor',
+    name: 'Minor 小和弦家族',
+    color: '#3a8fd4',
+    desc: '从小三和弦出发，发展出各种忧郁、柔和的和弦',
+    chains: [
+      { label: '基础扩展', nodes: ['minor','madd9','m6'] },
+      { label: '七度延伸', nodes: ['minor','m7','m9','m11'] },
+      { label: '异域七度', nodes: ['minor','mmaj7'] },
+      { label: '减系', nodes: ['minor','dim','dim7'] },
+      { label: '半减', nodes: ['minor','m7b5'] },
+    ]
+  },
+  {
+    id: 'dominant',
+    name: 'Dominant 属七家族',
+    color: '#9055d4',
+    desc: '从属七和弦出发，是爵士和蓝调的核心语言',
+    chains: [
+      { label: '自然延伸', nodes: ['7','9','11','13'] },
+      { label: '变化系', nodes: ['7','7b5'] },
+      { label: '变化系', nodes: ['7','7b9'] },
+      { label: '变化系', nodes: ['7','7s9'] },
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════
+// RENDER EVOLUTION TREE
+// ═══════════════════════════════════════════════════════════
+function renderTree() {
+  const container = document.getElementById('tree-container');
+  container.innerHTML = '';
+
+  CHAINS.forEach(family => {
+    const sect = document.createElement('div');
+    sect.className = 'evo-family';
+    sect.innerHTML = `
+      <div class="evo-family-header">
+        <div class="evo-family-dot" style="background:${family.color}"></div>
+        <div class="evo-family-name">${family.name}</div>
+        <div class="evo-family-desc">— ${family.desc}</div>
+      </div>
+    `;
+
+    family.chains.forEach((chain, ci) => {
+      // Only show unique chains (skip duplicate labels)
+      const chainDiv = document.createElement('div');
+      chainDiv.style.cssText = 'margin-bottom:10px';
+
+      const chainWrap = document.createElement('div');
+      chainWrap.className = 'evo-chain';
+      chainWrap.style.alignItems = 'center';
+
+      chain.nodes.forEach((typeId, ni) => {
+        const def = CT[typeId];
+        if (!def) return;
+
+        if (ni > 0) {
+          const arrow = document.createElement('div');
+          arrow.className = 'evo-arrow';
+          arrow.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <div style="font-size:16px;color:var(--bd2)">→</div>
+            <div style="font-size:8px;color:var(--tx3);white-space:nowrap;max-width:70px;text-align:center">${def.change}</div>
+          </div>`;
+          chainWrap.appendChild(arrow);
+        }
+
+        const node = document.createElement('div');
+        node.className = 'chord-node';
+        node.id = `node-${typeId}`;
+        node.style.borderColor = def.col + '55';
+        node.innerHTML = `
+          <div class="cn-sym" style="color:${def.col}">${globalKey}${def.sym}</div>
+          <div class="cn-form">${def.ivs.join('-')}</div>
+          <div class="cn-feel">${def.feel.split('、')[0]}</div>
+          <button class="cn-play" style="background:${def.col}22;color:${def.col}" onclick="event.stopPropagation();playChordType('${typeId}','${globalKey}')">▶</button>
+        `;
+        node.onclick = () => openPanel(typeId, globalKey);
+        chainWrap.appendChild(node);
+      });
+
+      chainDiv.appendChild(chainWrap);
+      sect.appendChild(chainDiv);
+    });
+
+    container.appendChild(sect);
+  });
+}
+
+function playChordType(type, root) {
+  const def = CT[type];
+  if (!def) return;
+  const rootHz = NFREQ[root] || 261.63;
+  playIntervals(rootHz, def.ivs);
+  // Animate node
+  const node = document.getElementById(`node-${type}`);
+  if (node) { node.classList.add('playing-anim'); setTimeout(() => node.classList.remove('playing-anim'), 500); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════════════════════════════
+function openPanel(typeId, root = 'C') {
+  const def = CT[typeId];
+  if (!def) return;
+
+  document.querySelectorAll('.chord-node').forEach(n => n.classList.remove('active'));
+  const node = document.getElementById(`node-${typeId}`);
+  if (node) node.classList.add('active');
+
+  const notes = chordNotes(root, typeId);
+  const voicing = getVoicing(root, typeId in SHAPES ? typeId : 'major');
+
+  // Evolution path
+  let evoPath = [typeId];
+  let cur = typeId;
+  while (CT[cur]?.parent) { cur = CT[cur].parent; evoPath.unshift(cur); }
+  const pathHtml = evoPath.map((id, i) => {
+    const d = CT[id];
+    return `<span style="color:${d.col};font-weight:${id===typeId?800:500};font-size:${id===typeId?14:12}px">${root}${d.sym}</span>${i<evoPath.length-1?'<span style="color:var(--tx3);font-size:11px"> → </span>':''}`;
+  }).join('');
+
+  // Interval breakdown
+  const ivNames = ['根音','小二度','大二度','小三度','大三度','纯四度','增四度','纯五度','小六度','大六度','小七度','大七度','纯八度','降九','大九度','升九','','纯十一'];
+  const ivBreak = def.ivs.map((iv, i) => {
+    const isKey = i === 1; // third is usually the key note
+    const note = notes[i] || '?';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd)">
+      <div style="width:32px;height:32px;border-radius:8px;background:${i===0?'var(--ac)':isKey?def.col+'33':'var(--s3)'};border:1px solid ${i===0?'var(--ac)':isKey?def.col:'var(--bd)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i===0?'#000':isKey?def.col:'var(--tx)'}">
+        ${note}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600">${ivNames[iv] || iv+'品'} <span style="color:var(--tx3);font-weight:400">(+${iv}品)</span></div>
+        <div style="font-size:10px;color:var(--tx2)">${i===0?'这是根音，和弦命名依据':i===1&&def.ivs.includes(4)&&!def.ivs.includes(3)?'★ 大三度 — 明亮感的来源':i===1&&def.ivs.includes(3)&&!def.ivs.includes(4)?'★ 小三度 — 忧郁感的来源':i===1&&def.ivs.includes(5)?'★ 四度 — 悬浮感（无大小）':''}</div>
+      </div>
+      <div style="margin-left:auto">
+        <div style="height:4px;border-radius:2px;background:${def.col};width:${Math.min(iv*5+10, 60)}px;opacity:.6"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Root selector
+  const rootSel = NS.map(n => `<option value="${n}" ${n===root?'selected':''}>${n}</option>`).join('');
+
+  document.getElementById('dp-inner').innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${def.col};flex-shrink:0"></div>
+        <div style="font-size:20px;font-weight:800">${root}${def.sym}</div>
+        <div style="font-size:12px;color:var(--tx2)">${def.name}</div>
+      </div>
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:10px">${def.feel} &nbsp;·&nbsp; ${def.use}</div>
+      <div style="font-size:11px;margin-bottom:12px">演化路径：${pathHtml}</div>
+
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+        <select id="dp-root" onchange="openPanel('${typeId}',this.value)" style="font-size:12px;padding:5px 8px">${rootSel}</select>
+        <button class="btn bp" style="padding:7px 12px;font-size:12px" onclick="playChordType('${typeId}','${root}')">▶ 播放</button>
+      </div>
+    </div>
+
+    <div style="background:var(--s2);border-radius:10px;padding:13px;margin-bottom:14px">
+      <div class="clabel" style="margin-bottom:8px">演化故事</div>
+      <div style="font-size:13px;line-height:1.7;color:var(--tx2)"><b style="color:var(--tx)">${def.change}</b> — ${def.why}</div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div class="clabel">构成音分析</div>
+      ${ivBreak}
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div class="clabel">吉他指法 (${root})</div>
+      ${(() => {
+        const v = getVoicing(root, typeId in SHAPES ? typeId : 'major');
+        return `<div class="diag-wrap" style="display:inline-block" onclick="playFrets([${v}])">${diagSVG(v, 90)}<div class="diag-label">点击试听</div></div>`;
+      })()}
+    </div>
+
+    <div style="background:var(--s2);border-radius:10px;padding:12px">
+      <div class="clabel" style="margin-bottom:8px">音乐场景</div>
+      <div style="font-size:12px;color:var(--tx2);line-height:1.7">${def.use}</div>
+      <div style="margin-top:8px;font-size:12px;color:${def.col}">${def.feel}</div>
+    </div>
+  `;
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('overlay').style.display = 'block';
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('overlay').style.display = 'none';
+  document.querySelectorAll('.chord-node').forEach(n => n.classList.remove('active'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCALE PAGE
+// ═══════════════════════════════════════════════════════════
+function renderScale() {
+  const isMinor = globalMode === 'minor';
+  const ints = isMinor ? MIN_INT : MAJ_INT;
+  const qs   = isMinor ? MIN_Q   : MAJ_Q;
+  const rs   = isMinor ? MIN_R   : MAJ_R;
+  const fns  = isMinor ? MIN_FN  : MAJ_FN;
+  const ri   = NS.indexOf(globalKey);
+  const notes = ints.map(iv => NS[(ri + iv) % 12]);
+  const stepsBetween = isMinor ? ['W','H','W','W','H','W'] : ['W','W','H','W','W','W'];
+  const degColors = ['#e8952a','#3a8fd4','#3da85a','#9055d4','#e05050','#20b2aa','#f0c040'];
+  const modeName = isMinor ? '自然小调' : '大调';
+  const formula = isMinor ? 'W-H-W-W-H-W-W' : 'W-W-H-W-W-W-H';
+
+  // Scale notes row
+  const scaleRowHtml = notes.map((note, i) => {
+    const col = degColors[i];
+    const label = chordLabel(note, qs[i]);
+    const v = getVoicing(note, qs[i] in SHAPES ? qs[i] : 'major');
+    return `
+      ${i > 0 ? `<div class="scale-step-wrap"><span class="scale-step-lbl">${stepsBetween[i-1]}</span></div>` : ''}
+      <div class="scale-node">
+        <div class="scale-dot" style="color:${col};border-color:${col};background:${col}20"
+             onclick="playFrets([${v}])">${note}</div>
+        <div class="scale-deg" style="color:${col}">${i+1}级 ${rs[i]}</div>
+        <div class="scale-chd">${label}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Diatonic chord grid
+  const diaHtml = notes.map((note, i) => {
+    const type = qs[i];
+    const v = getVoicing(note, type in SHAPES ? type : 'major');
+    const col = DIAL_COL[i];
+    const label = chordLabel(note, type);
+    return `<div class="dia-cell" style="border-color:${col}55;cursor:pointer" onclick="stopAll();playFrets([${v}])">
+      <div class="dia-roman" style="color:${col}">${rs[i]}</div>
+      ${diagSVG(v, 68)}
+      <div class="dia-nm" style="font-weight:800">${label}</div>
+      <div class="dia-fn">${fns[i]}</div>
+    </div>`;
+  }).join('');
+
+  // Key I/IV/V/vi emphasis (or i/iv/v/VI for minor)
+  const keyDegs = isMinor ? [0,3,4,5] : [0,3,4,5];
+  const keyChords = keyDegs.map(i => chordLabel(notes[i], qs[i]));
+
+  // Relative key
+  const relIdx = isMinor ? 2 : 5; // major: 6th degree is rel minor; minor: 3rd degree is rel major
+  const relNote = notes[relIdx];
+  const relType = isMinor ? 'major' : 'minor';
+  const relName = chordLabel(relNote, relType);
+  const relDesc = isMinor
+    ? `${globalKey} 自然小调的关系大调是 <b style="color:var(--major)">${relName}</b>（第III级）。它们共享完全相同的7个音。`
+    : `${globalKey} 大调的关系小调是 <b style="color:var(--minor)">${relName}</b>（第vi级）。它们共享完全相同的7个音。`;
+
+  document.getElementById('scale-content').innerHTML = `
+    <div class="card">
+      <div class="clabel">${globalKey} ${modeName}音阶 — 公式 ${formula}（W=全音2品，H=半音1品）</div>
+      <div class="scale-row">${scaleRowHtml}</div>
+      <div class="ins">
+        <b>核心规律：</b>大调音阶永远是 W-W-H-W-W-W-H，换什么调都一样，只是起点不同。把这个公式背下来，任何调的音阶都能推出来。
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <div class="clabel" style="margin:0">${globalKey} ${isMinor?'小':'大'}调的7个自然和弦（点击试听）</div>
+        <div style="font-size:11px;color:var(--tx2)">这7个和弦可以任意顺序组合，绝对不出调</div>
+      </div>
+      <div class="dia-grid">${diaHtml}</div>
+      <div class="ins" style="margin-top:14px">
+        <b>先掌握这4个：</b>
+        ${keyChords.map(c => `<span style="font-weight:800;color:var(--ac);margin:0 4px">${c}</span>`).join('+')}
+        — 90%的流行歌曲只用这4个和弦。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">音阶 → 和弦 完整对应</div>
+      <div style="overflow-x:auto">
+        <table>
+          <tr><th>级数</th><th>音阶音</th><th>和弦</th><th>性质</th><th>功能</th><th>听</th></tr>
+          ${notes.map((note, i) => {
+            const type = qs[i];
+            const label = chordLabel(note, type);
+            const col = DIAL_COL[i];
+            const v = getVoicing(note, type in SHAPES ? type : 'major');
+            const qName = type==='major'?'大三和弦':type==='minor'?'小三和弦':'减三和弦';
+            return `<tr>
+              <td><span style="font-weight:800;color:${col}">${rs[i]}</span></td>
+              <td style="font-weight:700">${note}</td>
+              <td><span style="font-weight:800;color:${col}">${label}</span></td>
+              <td style="font-size:11px;color:var(--tx2)">${qName}</td>
+              <td style="font-size:11px;color:var(--tx2)">${fns[i]}</td>
+              <td><button class="btn bg" style="padding:3px 8px;font-size:11px" onclick="playFrets([${v}])">▶</button></td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">关系调</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--tx2)">${relDesc}</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FAMILIES PAGE
+// ═══════════════════════════════════════════════════════════
+const FAMILIES = [
+  {
+    id: 'major', name: 'Major 大和弦家族', col: '#e8952a',
+    intro: '所有明亮、积极的和弦都来自这个家族。大三度(4品)是"明亮"的关键。',
+    types: ['major','add9','6','69','maj7','maj9','aug','sus2','sus4','5']
+  },
+  {
+    id: 'minor', name: 'Minor 小和弦家族', col: '#3a8fd4',
+    intro: '忧郁、柔和、深沉的声音。三度音降低半品，情绪完全改变。',
+    types: ['minor','madd9','m6','m7','mmaj7','m7b5','m9','m11','dim','dim7']
+  },
+  {
+    id: 'dom7', name: 'Dominant 属七家族', col: '#9055d4',
+    intro: '蓝调和爵士的核心。小七度(b7)带来"想解决"的紧张感。',
+    types: ['7','7sus4','7b5','7b9','7s9','9','11','13']
+  },
+  {
+    id: 'aug', name: 'Aug/Dim 特殊和弦', col: '#c040c0',
+    intro: '增、减和弦极度不稳定，通常用作过渡或戏剧效果。',
+    types: ['aug','aug7','aug7b9','dim','dim7','m7b5']
+  }
+];
+
+let activeFam = 'major';
+
+function renderFamilies() {
+  // Filters
+  const ff = document.getElementById('fam-filters');
+  ff.innerHTML = FAMILIES.map(f => `
+    <button class="flt ${f.id===activeFam?'on':''}" style="${f.id===activeFam?`border-color:${f.col};color:${f.col}`:''}" onclick="setFam('${f.id}')">${f.name}</button>
+  `).join('');
+
+  const fam = FAMILIES.find(f => f.id === activeFam);
+  const fc = document.getElementById('fam-content');
+  fc.innerHTML = '';
+
+  // Intro card
+  const intro = document.createElement('div');
+  intro.className = 'card';
+  intro.innerHTML = `<p style="font-size:14px;line-height:1.7;color:var(--tx2)">${fam.intro}</p>`;
+  fc.appendChild(intro);
+
+  // Chain visualization
+  const chain = document.createElement('div');
+  chain.className = 'card';
+  chain.innerHTML = `<div class="clabel">家族进化链——点击任意和弦听声音</div>
+    <div class="evo-chain" style="align-items:center;gap:6px;padding:10px 0">
+      ${fam.types.map((typeId, i) => {
+        const def = CT[typeId];
+        if (!def) return '';
+        return `
+          ${i > 0 ? `<div style="color:var(--tx3);font-size:12px;flex-shrink:0;padding:0 2px">→</div>` : ''}
+          <div class="chord-node" style="border-color:${def.col}44;cursor:pointer" onclick="openPanel('${typeId}',globalKey)">
+            <div class="cn-sym" style="color:${def.col}">${globalKey}${def.sym || ''}</div>
+            <div class="cn-form">${def.ivs.join('-')}</div>
+            <div class="cn-feel">${def.feel.split('、')[0]}</div>
+            <button class="cn-play" style="background:${def.col}22;color:${def.col}" onclick="event.stopPropagation();playChordType('${typeId}',globalKey)">▶</button>
+          </div>
+        `;
+      }).join('')}
+    </div>`;
+  fc.appendChild(chain);
+
+  // Comparison: each type in detail
+  fam.types.forEach(typeId => {
+    const def = CT[typeId];
+    if (!def) return;
+    const parentDef = CT[def.parent];
+    const div = document.createElement('div');
+    div.className = 'family-sect';
+    div.style.borderLeftColor = def.col;
+    div.style.borderLeftWidth = '3px';
+    div.style.borderLeftStyle = 'solid';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:16px;font-weight:800;color:${def.col}">${globalKey}${def.sym}</span>
+            <span style="font-size:13px;font-weight:700">${def.name}</span>
+            ${def.parent ? `<span style="font-size:10px;color:var(--tx3);background:var(--s3);padding:2px 8px;border-radius:20px">从 ${globalKey}${parentDef?.sym||''} 演化</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:var(--tx2);margin-bottom:4px">
+            <b style="color:var(--tx)">${def.change}</b>
+          </div>
+          <div style="font-size:11px;color:${def.col}">${def.feel} &nbsp;·&nbsp; <span style="color:var(--tx2)">${def.use}</span></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="text-align:center">
+            ${diagSVG(getVoicing(globalKey, typeId in SHAPES ? typeId : 'major'), 70)}
+            <div style="font-size:10px;color:var(--tx2)">${globalKey}${def.sym}</div>
+          </div>
+          <button class="btn bp" style="padding:7px 11px;font-size:12px" onclick="event.stopPropagation();playChordType('${typeId}',globalKey)">▶ 听</button>
+          <button class="btn bg" style="padding:7px 11px;font-size:12px" onclick="openPanel('${typeId}',globalKey)">详情</button>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:4px;flex-wrap:wrap">
+        ${def.ivs.map((iv, i) => {
+          const n = chordNotes(globalKey, typeId)[i] || '?';
+          return `<span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;font-size:11px;font-weight:700;background:${i===0?'var(--ac)':'var(--s3)'};color:${i===0?'#000':'var(--tx)'};border:1px solid ${i===0?'var(--ac)':'var(--bd)'}">${n}</span>`;
+        }).join('')}
+        <span style="display:inline-flex;align-items:center;font-size:11px;color:var(--tx2);margin-left:4px">公式: ${def.ivs.join('-')}</span>
+      </div>
+    `;
+    div.onclick = () => openPanel(typeId, globalKey);
+    fc.appendChild(div);
+  });
+}
+
+function setFam(id) {
+  activeFam = id;
+  renderFamilies();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHORD DICTIONARY
+// ═══════════════════════════════════════════════════════════
+function renderDictChord() {
+  const root = document.getElementById('dict-root').value;
+  const type = document.getElementById('dict-type').value;
+  const def = CT[type];
+  if (!def) return;
+
+  const notes = chordNotes(root, type);
+  const rootHz = NFREQ[root] || 261.63;
+  const voicing = getVoicing(root, type in SHAPES ? type : 'major');
+
+  // Evolution path
+  let evoPath = [type];
+  let cur = type;
+  while (CT[cur]?.parent) { cur = CT[cur].parent; evoPath.unshift(cur); }
+
+  // All 12 roots voicings
+  const allVoicings = NS.map(n => ({
+    root: n,
+    frets: getVoicing(n, type in SHAPES ? type : 'major')
+  }));
+
+  document.getElementById('dict-result').innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:26px;font-weight:800;color:${def.col};margin-bottom:4px">${root}${def.sym}</div>
+          <div style="font-size:14px;color:var(--tx2);margin-bottom:8px">${def.name} — ${def.feel}</div>
+          <div style="font-size:12px;color:var(--tx2);margin-bottom:12px">${def.use}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+            ${notes.map((n,i) => `<div style="width:36px;height:36px;border-radius:9px;background:${i===0?'var(--ac)':'var(--s3)'};border:1px solid ${i===0?'var(--ac)':'var(--bd)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:${i===0?'#000':'var(--tx)'}">
+              ${n}
+            </div>`).join('')}
+          </div>
+          <div style="font-size:12px;color:var(--tx2)">公式(半音数)：<b style="color:var(--ac);font-family:monospace">${def.ivs.join(' - ')}</b></div>
+        </div>
+        <div>
+          <div class="clabel">演化路径</div>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:12px">
+            ${evoPath.map((id, i) => {
+              const d = CT[id];
+              return `<span style="color:${id===type?d.col:'var(--tx2)'};font-weight:${id===type?800:500};font-size:${id===type?14:12}px;cursor:pointer;text-decoration:${id!==type?'underline':''}" onclick="document.getElementById('dict-type').value='${id}';renderDictChord()">${root}${d.sym||'(major)'}</span>${i<evoPath.length-1?'<span style="color:var(--tx3)">→</span>':''}`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--s2);border-radius:10px;padding:13px;margin-top:8px">
+        <div class="clabel">演化解析</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--tx2)">
+          <b style="color:var(--tx)">${def.change}</b><br>${def.why}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">所有12个调的 ${def.sym||'Major'} 指法（点击试听）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+        ${allVoicings.map(({root: r, frets}) => `
+          <div class="diag-wrap" onclick="playFrets([${frets}])">
+            <div style="font-size:12px;font-weight:700;text-align:center;margin-bottom:2px;color:${def.col}">${r}${def.sym}</div>
+            ${diagSVG(frets, 72)}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RULES PAGE
+// ═══════════════════════════════════════════════════════════
+function renderRules() {
+  document.getElementById('rules-content').innerHTML = `
+    <div class="card">
+      <div class="clabel">规律一：三度音决定大小</div>
+      <div style="font-size:14px;line-height:1.7;margin-bottom:14px">
+        和弦里最关键的音是<b style="color:var(--ac)">三度音</b>（第二个音）：
+      </div>
+      <div class="cmp-grid">
+        <div class="cmp-cell" onclick="playIntervals(261.63,[0,4,7])">
+          <div style="font-size:20px;font-weight:800;color:var(--major)">大三度 +4品</div>
+          <div style="font-size:12px;color:var(--tx2);margin:6px 0">C → E（C大和弦）</div>
+          <div style="font-size:13px;color:var(--ac)">☀️ 明亮</div>
+        </div>
+        <div class="cmp-cell" onclick="playIntervals(261.63,[0,3,7])">
+          <div style="font-size:20px;font-weight:800;color:var(--minor)">小三度 +3品</div>
+          <div style="font-size:12px;color:var(--tx2);margin:6px 0">C → E♭（Cm小和弦）</div>
+          <div style="font-size:13px;color:var(--bl)">🌙 忧郁</div>
+        </div>
+      </div>
+      <div class="ins">差这<b>一品</b>，情绪完全翻转。这是整个音乐理论最重要的规律之一。</div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">规律二：七度音决定紧张感</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.7">在三和弦基础上加第四个音（七度音），情感层次大幅提升：</div>
+      <table>
+        <tr><th>七度类型</th><th>半音数</th><th>和弦例</th><th>情感</th><th>听</th></tr>
+        <tr><td style="color:var(--ac)">大七度 M7</td><td>+11品</td><td>Cmaj7</td><td>浪漫、梦幻</td><td><button class="btn bg" style="padding:4px 9px;font-size:11px" onclick="playIntervals(261.63,[0,4,7,11])">▶</button></td></tr>
+        <tr><td style="color:var(--pu,#9055d4)">小七度 b7</td><td>+10品</td><td>C7</td><td>紧张、蓝调</td><td><button class="btn bg" style="padding:4px 9px;font-size:11px" onclick="playIntervals(261.63,[0,4,7,10])">▶</button></td></tr>
+        <tr><td style="color:var(--bl)">小七度(小三)</td><td>+10品</td><td>Cm7</td><td>柔和、爵士</td><td><button class="btn bg" style="padding:4px 9px;font-size:11px" onclick="playIntervals(261.63,[0,3,7,10])">▶</button></td></tr>
+        <tr><td style="color:#c040c0">减七度 bb7</td><td>+9品</td><td>Cdim7</td><td>极度紧张</td><td><button class="btn bg" style="padding:4px 9px;font-size:11px" onclick="playIntervals(261.63,[0,3,6,9])">▶</button></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="clabel">规律三：延伸音 9/11/13 = 继续叠加三度</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:14px;line-height:1.7">
+        延伸和弦就是在七和弦基础上继续每次 <b style="color:var(--ac)">+3度</b>：
+      </div>
+      <div style="overflow-x:auto">
+        <div style="display:flex;gap:0;align-items:center;min-width:480px">
+          ${[['major','C','1-3-5'],['7','C7','1-3-5-b7'],['9','C9','1-3-5-b7-9'],['11','C11','1-3-5-b7-9-11'],['13','C13','1-3-5-b7-9-11-13']].map(([t,name,f],i)=>`
+            ${i>0?'<div style="font-size:18px;color:var(--bd2);padding:0 4px">+3°</div>':''}
+            <div style="text-align:center;padding:8px 10px;background:var(--s2);border-radius:10px;border:1px solid var(--bd);cursor:pointer" onclick="playChordType('${t}','C')">
+              <div style="font-size:14px;font-weight:800;color:var(--pu,#9055d4)">${name}</div>
+              <div style="font-size:9px;font-family:monospace;color:var(--tx2);margin-top:2px">${f}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="ins" style="margin-top:12px">每加一个延伸音，和声颜色更丰富，但同时也更复杂。<b>爵士音乐通常用9-13度，流行音乐通常停在7度</b>。</div>
+    </div>
+
+    <div class="card">
+      <div class="clabel">规律四：所有变化和弦 = 升降某个音</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:12px;line-height:1.7">书中后半部分的"变化"和弦，都是在基础和弦上升降某个音：</div>
+      <table>
+        <tr><th>和弦</th><th>对比基础</th><th>变化</th><th>效果</th><th>听</th></tr>
+        <tr><td style="color:var(--pu,#9055d4)">C7(b5)</td><td>C7</td><td>G → G♭</td><td>更蓝调、爵士</td><td><button class="btn bg" style="padding:4px 8px;font-size:11px" onclick="playIntervals(261.63,[0,4,6,10])">▶</button></td></tr>
+        <tr><td style="color:var(--pu,#9055d4)">C7(b9)</td><td>C7</td><td>加 D♭</td><td>西班牙、弗拉门戈</td><td><button class="btn bg" style="padding:4px 8px;font-size:11px" onclick="playIntervals(261.63,[0,4,7,10,13])">▶</button></td></tr>
+        <tr><td style="color:var(--pu,#9055d4)">C7(#9)</td><td>C7</td><td>加 D#</td><td>Hendrix! 扭曲感</td><td><button class="btn bg" style="padding:4px 8px;font-size:11px" onclick="playIntervals(261.63,[0,4,7,10,15])">▶</button></td></tr>
+        <tr><td style="color:var(--aug,'#e05050')">C+7</td><td>C7</td><td>G → G#</td><td>极度紧张</td><td><button class="btn bg" style="padding:4px 8px;font-size:11px" onclick="playIntervals(261.63,[0,4,8,10])">▶</button></td></tr>
+        <tr><td style="color:#c040c0">Cmaj7(b5)</td><td>Cmaj7</td><td>G → G♭</td><td>前卫、神秘</td><td><button class="btn bg" style="padding:4px 8px;font-size:11px" onclick="playIntervals(261.63,[0,4,6,11])">▶</button></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="clabel">完整公式总览表</div>
+      <div style="overflow-x:auto">
+        <table>
+          <tr><th>和弦</th><th>公式(半音)</th><th>情感</th><th>听</th></tr>
+          ${Object.entries(CT).map(([id, def]) => `
+            <tr>
+              <td>
+                <span style="font-weight:700;color:${def.col}">${globalKey}${def.sym}</span>
+                <span style="font-size:11px;color:var(--tx2);margin-left:5px">${def.name}</span>
+              </td>
+              <td><code style="font-size:11px;color:var(--tx2)">${def.ivs.join('-')}</code></td>
+              <td style="font-size:11px;color:var(--tx2)">${def.feel}</td>
+              <td><button class="btn bg" style="padding:3px 8px;font-size:11px" onclick="playChordType('${id}',globalKey)">▶</button></td>
+            </tr>
+          `).join('')}
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// NEW MODULES DATA
+// ═══════════════════════════════════════════════════════════
+const NDIS=['C','C#/D♭','D','D#/E♭','E','F','F#/G♭','G','G#/A♭','A','A#/B♭','B'];
+const MAJ_INT=[0,2,4,5,7,9,11];
+const MIN_INT=[0,2,3,5,7,8,10];
+const MAJ_Q=['major','minor','minor','major','major','minor','dim'];
+const MIN_Q=['minor','dim','major','minor','minor','major','major'];
+const MAJ_R=['I','ii','iii','IV','V','vi','vii°'];
+const MIN_R=['i','ii°','III','iv','v','VI','VII'];
+const MAJ_FN=['主和弦','上主音','中音','下属','属和弦','关系小调','导音'];
+const MIN_FN=['主和弦','导音减','关系大调','下属','属','下中音','大属'];
+const DIAL_COL=['#e8952a','#3a8fd4','#3da85a','#9055d4','#e05050','#20b2aa','#888'];
+const LIB_TYPES=['major','minor','7','maj7','m7'];
+const TNAME={major:'大三和弦',minor:'小三和弦','7':'属七和弦',maj7:'大七和弦',m7:'小七和弦'};
+const TSUF={major:'',minor:'m','7':'7',maj7:'maj7',m7:'m7'};
+
+const PROGS_MAJ=[
+  {name:'I – IV – V',       roman:'I–IV–V',         deg:[1,4,5],     style:'蓝调 / 摇滚', desc:'最经典进行，数千首歌的基础'},
+  {name:'I – V – vi – IV',  roman:'I–V–vi–IV',       deg:[1,5,6,4],   style:'流行 / 摇滚', desc:'现代最常用进行（Let It Be、Someone Like You…）'},
+  {name:'I – vi – IV – V',  roman:'I–vi–IV–V',       deg:[1,6,4,5],   style:'复古 / 流行', desc:'50年代经典，怀旧风格'},
+  {name:'I – IV – vi – V',  roman:'I–IV–vi–V',       deg:[1,4,6,5],   style:'抒情 / 流行', desc:'抒情歌曲常见变体'},
+  {name:'vi – IV – I – V',  roman:'vi–IV–I–V',       deg:[6,4,1,5],   style:'流行 / 独立', desc:'从小调色彩开始，更有情绪感'},
+  {name:'I–V–vi–iii–IV',   roman:'I–V–vi–iii–IV',   deg:[1,5,6,3,4], style:'古典 / 流行', desc:'卡农进行变体，流动感强'},
+  {name:'ii – V – I',       roman:'ii–V–I',          deg:[2,5,1],     style:'爵士',        desc:'爵士乐基础，功能解决感最强'},
+];
+const PROGS_MIN=[
+  {name:'i – VII – VI – VII',roman:'i–VII–VI–VII',   deg:[1,7,6,7],  style:'金属 / 摇滚', desc:'忧郁感强，金属摇滚常用'},
+  {name:'i – iv – VII – III',roman:'i–iv–VII–III',   deg:[1,4,7,3],  style:'民谣 / 独立', desc:'自然小调循环'},
+  {name:'i – VI – III – VII',roman:'i–VI–III–VII',   deg:[1,6,3,7],  style:'流行',        desc:'小调流行必备'},
+  {name:'i – VII – VI – V', roman:'i–VII–VI–V',      deg:[1,7,6,5],  style:'弗拉门戈',    desc:'西班牙/弗拉门戈风格'},
+  {name:'i – iv – v – i',   roman:'i–iv–v–i',        deg:[1,4,5,1],  style:'古典 / 传统', desc:'小调功能性进行'},
+  {name:'i – VI – VII – i', roman:'i–VI–VII–i',      deg:[1,6,7,1],  style:'流行 / 电子', desc:'流行小调循环'},
+];
+
+const STAGES=[
+  {title:'第一阶段：C调音阶与顺阶和弦',desc:'打通「音阶→和弦」的核心逻辑，这是所有调的基础',skills:[
+    '理解全音(W=2品)和半音(H=1品)',
+    'C大调音阶：C-D-E-F-G-A-B，公式W-W-H-W-W-W-H',
+    '7个音分别是1234567级，知道每级对应什么音',
+    '在「音阶」页面查看C调的7个顺阶和弦',
+    '理解为什么 I/IV/V 是大和弦，ii/iii/vi 是小和弦',
+    '理解大三度(+4品)=明亮 vs 小三度(+3品)=忧郁',
+  ]},
+  {title:'第二阶段：I-IV-V-vi 弹歌',desc:'用C调4个核心和弦弹出90%的流行歌曲',skills:[
+    '熟练按出 C（I级主和弦）',
+    '熟练按出 F（IV级下属和弦）',
+    '熟练按出 G（V级属和弦）',
+    '熟练按出 Am（vi级关系小调）',
+    'C↔F 切换流畅（8拍内完成）',
+    'G↔Am 切换流畅',
+    '用这4个和弦完整弹唱1首歌',
+    '用这4个和弦弹完5首不同的歌',
+  ]},
+  {title:'第三阶段：理解级数与功能',desc:'用级数理解任何歌曲，不再死记和弦名字',skills:[
+    '知道I级是「家」（主和弦，歌曲开始和结束的地方）',
+    '知道V级是「想回家」（属和弦，张力最强）',
+    '知道IV级是「离家不远」（下属，稳定过渡）',
+    '知道vi级是关系小调主和弦（忧郁感）',
+    '在「和弦进行」页面弹熟 I-V-vi-IV',
+    '在「和弦进行」页面弹熟 I-IV-V',
+    '听一首歌能说出大概是大调感还是小调感',
+    '能用级数描述一首歌（如「这首歌是 I-V-vi-IV」）',
+  ]},
+  {title:'第四阶段：迁移到其他调',desc:'同一套逻辑，解锁全部12个调',skills:[
+    '在「音阶」页面切换到G调，看G调的7个顺阶和弦',
+    '弹熟G调 I-IV-V-vi（G-C-D-Em）',
+    '理解G调的IV级（C）= C调的I级，指法完全一样',
+    '用移调夹让C调指法应用到其他调',
+    '切换到D调，用移调夹+C调指法，不需要记新指法',
+    '能判断一首熟悉的歌大概是什么调',
+    '学会横按F和弦（E形横按）',
+    '学会横按Bm（A形横按）',
+  ]},
+  {title:'第五阶段：七和弦与配和弦',desc:'用七和弦丰富音色，学会为任意旋律配和弦',skills:[
+    '学会 Cmaj7（I级大七，浪漫感）',
+    '学会 Am7（vi级小七，爵士感）',
+    '学会 G7（V级属七，解决感更强）',
+    '学会 Dm7（ii级小七，流动感）',
+    '理解 ii-V-I 进行（Dm7-G7-Cmaj7）',
+    '用「和弦字典」查找任意和弦的按法',
+    '为一首自己喜欢的歌从头配和弦',
+    '能用「顺阶和弦」页面为任意调配歌曲',
+  ]},
+];
+
+// ── State ──
+let libRootF='all', libTypeF='all';
+let kfKey='C', kfMode='major';
+let pgKey='C', pgMode='major';
+let qzOk=0, qzNo=0, qzCurrent=null, qzDone=false;
+let gSkills=new Set(JSON.parse(localStorage.getItem('gs_skills')||'[]'));
+
+function nDisp(n){ return NDIS[NS.indexOf(n)]||n; }
+function chordLabel(root,type){ return nDisp(root)+(TSUF[type]!==undefined?TSUF[type]:type); }
+
+// ── Learning Path ──
+function saveSkills(){ localStorage.setItem('gs_skills',JSON.stringify([...gSkills])); }
+function renderPath(){
+  const total=STAGES.reduce((s,st)=>s+st.skills.length,0);
+  const pct=total?Math.round(gSkills.size/total*100):0;
+  document.getElementById('path-pct').textContent=pct+'%';
+  document.getElementById('path-fill').style.width=pct+'%';
+  const con=document.getElementById('stages-con');
+  con.innerHTML='';
+  STAGES.forEach((st,si)=>{
+    const d=st.skills.filter((_,ki)=>gSkills.has(si+'_'+ki)).length;
+    const t=st.skills.length;
+    const sp=Math.round(d/t*100);
+    const div=document.createElement('div');
+    div.className='stage-wrap';
+    div.innerHTML=`
+      <div class="stage-hdr" onclick="toggleStage(${si})">
+        <div class="stage-num">${si+1}</div>
+        <div class="stage-meta">
+          <div class="stage-title">${st.title}</div>
+          <div class="stage-desc">${st.desc}</div>
+          <div class="prog-wrap"><div class="prog-fill" style="width:${sp}%"></div></div>
+        </div>
+        <div class="stage-ct">${d}/${t}</div>
+      </div>
+      <div class="stage-body" id="stb${si}">
+        <ul class="sk-list">
+          ${st.skills.map((sk,ki)=>{
+            const k=si+'_'+ki, done=gSkills.has(k);
+            return `<li class="sk-item${done?' done':''}" onclick="toggleSkill('${k}',${si})">
+              <div class="sk-dot${done?' done':''}">${done?'✓':''}</div>
+              <div class="sk-tx">${sk}</div>
+            </li>`;
+          }).join('')}
+        </ul>
+      </div>`;
+    con.appendChild(div);
+  });
+}
+function toggleStage(si){ document.getElementById('stb'+si)?.classList.toggle('open'); }
+function toggleSkill(k,si){
+  gSkills.has(k)?gSkills.delete(k):gSkills.add(k);
+  saveSkills(); renderPath();
+  setTimeout(()=>document.getElementById('stb'+si)?.classList.add('open'),10);
+}
+
+// ── Chord Library ──
+function initChordLib(){
+  document.getElementById('lib-root-row').innerHTML=
+    `<button class="flt on" onclick="setLibRoot('all',this)">全部</button>`+
+    NS.map((n,i)=>`<button class="flt" onclick="setLibRoot('${n}',this)">${NDIS[i]}</button>`).join('');
+  document.getElementById('lib-type-row').innerHTML=
+    `<button class="flt on" onclick="setLibType('all',this)">全部</button>`+
+    LIB_TYPES.map(t=>`<button class="flt" onclick="setLibType('${t}',this)">${TNAME[t]}</button>`).join('');
+  renderChordLib();
+}
+function setLibRoot(v,el){
+  libRootF=v;
+  document.querySelectorAll('#lib-root-row .flt').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); renderChordLib();
+}
+function setLibType(v,el){
+  libTypeF=v;
+  document.querySelectorAll('#lib-type-row .flt').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); renderChordLib();
+}
+function renderChordLib(){
+  const roots=libRootF==='all'?NS:[libRootF];
+  const types=libTypeF==='all'?LIB_TYPES:[libTypeF];
+  const g=document.getElementById('chord-grid-new');
+  g.innerHTML=roots.map(r=>types.map(t=>{
+    const v=getVoicing(r,t in SHAPES?t:'major');
+    const label=chordLabel(r,t);
+    return `<div class="cg-card" onclick="stopAll();playFrets([${v}]);openPanel('${t}','${r}')">
+      ${diagSVG(v,84)}
+      <div class="cg-name">${label}</div>
+      <div class="cg-type">${TNAME[t]}</div>
+    </div>`;
+  }).join('')).join('');
+}
+
+// ── Key Finder ──
+function initKeyFinder(){
+  document.getElementById('kf-btns').innerHTML=
+    NS.map((n,i)=>`<button class="key-btn${n===kfKey?' on':''}" onclick="setKFKey('${n}',this)">${NDIS[i]}</button>`).join('');
+}
+function setKFKey(k,el){
+  kfKey=k; globalKey=k; pgKey=k;
+  document.querySelectorAll('#kf-btns .key-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.gk').forEach(b=>b.classList.toggle('on',b.dataset.key===k));
+  el.classList.add('on'); renderKeyFinder();
+}
+function setKFMode(m){
+  kfMode=m;
+  document.getElementById('kfm-maj').classList.toggle('on',m==='major');
+  document.getElementById('kfm-min').classList.toggle('on',m==='minor');
+  renderKeyFinder();
+}
+function renderKeyFinder(){
+  const ints=kfMode==='major'?MAJ_INT:MIN_INT;
+  const qs=kfMode==='major'?MAJ_Q:MIN_Q;
+  const rs=kfMode==='major'?MAJ_R:MIN_R;
+  const fns=kfMode==='major'?MAJ_FN:MIN_FN;
+  const ri=NS.indexOf(kfKey);
+  let cells='';
+  for(let i=0;i<7;i++){
+    const ni=(ri+ints[i])%12;
+    const note=NS[ni];
+    const type=qs[i];
+    const vType=type in SHAPES?type:'minor';
+    const v=getVoicing(note,vType);
+    const col=DIAL_COL[i];
+    cells+=`<div class="dia-cell" style="border-color:${col}55" onclick="stopAll();playFrets([${v}])">
+      <div class="dia-roman" style="color:${col}">${rs[i]}</div>
+      ${diagSVG(v,68)}
+      <div class="dia-nm">${chordLabel(note,type)}</div>
+      <div class="dia-fn">${fns[i]}</div>
+    </div>`;
+  }
+  document.getElementById('kf-result').innerHTML=`
+    <div class="card">
+      <div style="font-weight:800;font-size:15px;color:var(--ac);margin-bottom:4px">${NDIS[ri]} ${kfMode==='major'?'大调':'小调'} — 7个自然和弦</div>
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:2px">以下和弦均在调内，可自由组合。点击任意和弦试听。</div>
+      <div class="dia-grid">${cells}</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--ac)">
+      <div class="clabel">使用提示</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--tx2)">
+        <li>• <b style="color:var(--tx)">${rs[0]}（主）</b> 是"家"，歌曲通常从这里开始和结束</li>
+        <li>• <b style="color:var(--tx)">${rs[4]}（属）</b> 制造紧张感，渴望回到主和弦</li>
+        <li>• <b style="color:var(--tx)">${rs[3]}（下属）</b> 离家但不远，稳定过渡</li>
+        <li>• 这 7 个和弦可以任意顺序组合，不用担心跑调</li>
+      </ul>
+    </div>`;
+}
+
+// ── Progressions ──
+function initProgs(){
+  document.getElementById('pg-btns').innerHTML=
+    NS.map((n,i)=>`<button class="key-btn${n===pgKey?' on':''}" onclick="setPGKey('${n}',this)">${NDIS[i]}</button>`).join('');
+  renderProgs();
+}
+function setPGKey(k,el){
+  pgKey=k; globalKey=k; kfKey=k;
+  document.querySelectorAll('#pg-btns .key-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.gk').forEach(b=>b.classList.toggle('on',b.dataset.key===k));
+  el.classList.add('on'); renderProgs();
+}
+function setPGMode(m){
+  pgMode=m;
+  document.getElementById('pgm-maj').classList.toggle('on',m==='major');
+  document.getElementById('pgm-min').classList.toggle('on',m==='minor');
+  renderProgs();
+}
+function degChord(rootNote,deg,mode){
+  const ints=mode==='major'?MAJ_INT:MIN_INT;
+  const qs=mode==='major'?MAJ_Q:MIN_Q;
+  const ri=NS.indexOf(rootNote);
+  const i=deg-1;
+  if(i<0||i>6) return null;
+  const ni=(ri+ints[i])%12;
+  return {note:NS[ni],type:qs[i],label:chordLabel(NS[ni],qs[i])};
+}
+function renderProgs(){
+  const list=pgMode==='major'?PROGS_MAJ:PROGS_MIN;
+  const rs=pgMode==='major'?MAJ_R:MIN_R;
+  document.getElementById('pg-result').innerHTML=
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;margin-top:12px">
+      ${list.map(p=>{
+        const pills=p.deg.map(d=>{
+          const ch=degChord(pgKey,d,pgMode);
+          return ch?`<span class="ppill">${ch.label}</span>`:'';
+        }).join('');
+        const roman=p.deg.map(d=>rs[d-1]).join(' — ');
+        return `<div class="pcard">
+          <div class="pn">${p.name}</div>
+          <div class="pr">${roman}</div>
+          <div class="ppills">${pills}</div>
+          <div class="pstyle">风格：${p.style}</div>
+          <div class="pdesc">${p.desc}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── Quiz ──
+function quizPool(){
+  const items=[];
+  NS.forEach(r=>LIB_TYPES.forEach(t=>{
+    items.push({root:r,type:t,frets:getVoicing(r,t in SHAPES?t:'major')});
+  }));
+  return items;
+}
+function nextQ(){
+  const pool=quizPool();
+  const correct=pool[Math.floor(Math.random()*pool.length)];
+  qzCurrent=correct; qzDone=false;
+  const wrong=[];
+  while(wrong.length<3){
+    const c=pool[Math.floor(Math.random()*pool.length)];
+    if((c.root!==correct.root||c.type!==correct.type)&&!wrong.find(w=>w.root===c.root&&w.type===c.type))
+      wrong.push(c);
+  }
+  const opts=[correct,...wrong].sort(()=>Math.random()-.5);
+  document.getElementById('qz-diag').innerHTML=diagSVG(correct.frets,110);
+  document.getElementById('qz-fb').textContent='';
+  document.getElementById('qz-fb').className='quiz-fb';
+  document.getElementById('qz-next').style.display='none';
+  document.getElementById('qz-opts').innerHTML=opts.map(c=>{
+    const nm=chordLabel(c.root,c.type);
+    const isOk=c.root===correct.root&&c.type===correct.type;
+    return `<button class="quiz-opt" onclick="answerQ(this,${isOk})">${nm}</button>`;
+  }).join('');
+}
+function answerQ(btn,isOk){
+  if(qzDone) return;
+  qzDone=true;
+  const nm=chordLabel(qzCurrent.root,qzCurrent.type);
+  if(isOk){ btn.classList.add('correct'); qzOk++; document.getElementById('qz-fb').textContent='✓ 答对了！'; document.getElementById('qz-fb').className='quiz-fb ok'; }
+  else { btn.classList.add('wrong'); qzNo++; document.getElementById('qz-fb').textContent='✗ 答错了，正确是 '+nm; document.getElementById('qz-fb').className='quiz-fb no';
+    document.querySelectorAll('.quiz-opt').forEach(b=>{if(b.textContent===nm) b.classList.add('correct');}); }
+  document.querySelectorAll('.quiz-opt').forEach(b=>b.disabled=true);
+  document.getElementById('qz-next').style.display='inline-flex';
+  const tot=qzOk+qzNo;
+  document.getElementById('sqz-ok').textContent=qzOk;
+  document.getElementById('sqz-no').textContent=qzNo;
+  document.getElementById('sqz-tot').textContent=tot;
+  document.getElementById('sqz-pct').textContent=Math.round(qzOk/tot*100)+'%';
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+const PAGES = ['scale','key','prog','tree','families','dict','rules','chords','quiz','path'];
+function go(id) {
+  stopAll();
+  closePanel();
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  const idx = PAGES.indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.nb')[idx].classList.add('on');
+  window.scrollTo(0, 0);
+  if (id === 'scale') renderScale();
+  if (id === 'families') renderFamilies();
+  if (id === 'dict') renderDictChord();
+  if (id === 'rules') renderRules();
+  if (id === 'path') renderPath();
+  if (id === 'key') renderKeyFinder();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+initGlobalKeyBar();
+renderScale();
+renderTree();
+renderPath();
+initChordLib();
+initKeyFinder();
+initProgs();
+nextQ();
+</script>
+</body>
+</html>
